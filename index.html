@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="./css/reset.css">
+		<link rel="stylesheet" href="./css/index.css">
+	</head>
+	<body>
+		<div class="full-tip-box" style="position: fixed; top:-100px; margin-left:750px; z-index:999;">
+			<span class="full-tip">
+				<span class="inner">
+					<i class="ico"></i>
+					<span class="text" data-id="label">新建文件夹成功</span>
+			</span>
+			</span>
+		</div>
+		<div class="wrap">
+			<header class="header clearfix">
+				<div class="header_left clearfix fl">
+					<h1><img src = "./images/logo.png"></h1>
+					<div class="item">M云盘</div>
+				</div>
+				<div class="header_right clearfix fr">
+					<div class="user"></div>
+					<img class="header_list" src="./images/header_list.png">
+					<span></span>
+					<img class="header_set" src="./images/header_set.png">
+				</div>
+			</header>
+			<nav class="navs clearfix">
+				<ul class="clearfix navs_left">
+					<li><i></i>下载</li>
+					<li><i></i>分享</li>
+					<li id="remove"><i></i>移动到</li>
+					<li id="rename"><i></i>重命名</li>
+				
+				<li id="del"><i></i>删除</li>
+					<li id="create"><i></i>新建文件夹</li>
+					<li><i></i></li>
+				</ul>	
+				<div class="clearfix navs_right">
+					<span class="navs_right1"></span>
+					<span class="navs_right2"></span>
+				</div>
+			</nav>
+			<div class="content clearfix">
+				<div class="content_left fl"></div>
+				<div class="content_right fl">
+					<label class="checked-all"></label>
+					<div class="content_nav">
+						<!--<i></i>-->
+						<!--<a href="">放放风<em></em></a>
+						<a href="">事实上<em></em></a>
+						<a href="">事实上<em></em></a>
+						<span>高规格</span>-->
+					</div>
+					<section class="content_main">
+						<!--<div class="content_main_item">
+							<img src="./images/filer.png" alt="" />
+							<span class="folder-name">JS基础课程</span>
+							<input type="text" class="editor"/>
+							<i></i>
+						</div>-->
+						
+					</section>
+					<div class="none_filer">
+						<p class="p1">暂无文件</p>
+						<p class="p2">请点击左上角的“上传”按钮添加</p>
+					</div>
+				</div>
+				
+			</div>
+			<div id="tanbox">
+				<div class="conf">
+					<i class="close-ico">X</i>
+					<h3 class="conf-title">删除文件</h3>
+					<div class="conf-content">
+						确定要删除文件吗？
+					</div>
+					<div class="conf-btn">
+						<a href="javascript:;">确定</a>
+						<a href="javascript:;">取消</a>
+					</div>
+				</div>
+			</div>
+			
+			<div class="mask">	
+				<section class="conf_remove">
+					<i class="close-ico">X</i>
+					<h3 class="conf-title">移动到</h3>
+					<section class="mask_content">
+						<!-- <ul>
+							<li>
+								<div class="tree-title tree-ico close">
+									<span><i></i>微云</span>
+								</div>
+								<ul>
+									<li>
+										<div class="tree-title tree-ico close">
+											<span><i></i>我的音乐</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul> -->
+					</section> 
+					<div class="conf-btn">
+						<span class="yidong-tip"></span>
+						<a class="yidong_qd" href="javascript:;">确定</a>
+						<a class="yidong_qx" href="javascript:;">取消</a>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+		<script src="./js/utils.js"></script>
+		<script src="./js/data.js"></script>
+		<script src="./js/index.js"></script>
+		<script>
+//--------------------------------------1.渲染菜单区域-----------------------------------------------
+function getDateById(id){
+	if(data[id]){
+		return data[id]
+	}
+
+	return null;
+}
+
+function getChildsById(id){  // id 父id
+	var arr = [];
+	for(var attr in data){
+		if(data[attr].pid == id){
+			arr.push(data[attr])
+		}
+	}
+
+	return arr;
+};
+			
+//---------------------------1.先根据数据生成树形菜单-----------------------------------------------------
+
+var contentLeft = document.getElementsByClassName('content_left')[0];
+var level = -1;
+var pid = -1; // 通过这个pid找下面的子数据
+function createTreeHtml(pid,level){
+	level++;
+	// 找到所有的子级
+	var arr = [];
+	for( var attr in data ){
+		if(data[attr].pid == pid){
+			arr.push(data[attr]);
+		};
+	};
+
+	// var treeHtml;
+	// 没有子数据，这个函数返回的是undefined，因为var treeHtml有变量提升的功能，if语句是走不进去的。
+	var treeHtml = '';
+	if(arr.length){  // 判断有没有子级
+		
+		treeHtml = `<ul>`;
+		arr.forEach(function (item){
+
+			// 循环到这里，找item下的子数据，拼上结构
+
+			treeHtml += `<li data-id=${item.id}>
+							<div style="padding-left: ${level*20}px;" data-id=${item.id}>
+								<i class=${getChildsById(item.id).length==0 ? "" : "del"}></i>
+								<span class="del2">${item.title}</span>
+							</div>`;
+							if(arr.length != 0){
+								treeHtml +=createTreeHtml(item.id,level)
+							};
+			treeHtml += `</li>`
+		})
+
+		treeHtml += `</ul>`;	
+	}
+	return treeHtml;
+
+};
+contentLeft.innerHTML = createTreeHtml(-1,level);
+//-----------------------------------定位元素-----------------------------------
+			
+//——————给一个ID可以找到这个id元素,利用data自定义属性id
+positionElement(0);
+function positionElement(positionId){
+	var content_left = $(".content_left")[0];
+	var treeDivs = content_left.getElementsByTagName("div");
+	// 给一个id，我给这个id对应的div添加样式
+	for( var i = 0; i < treeDivs.length; i++ ){
+		treeDivs[i].classList.remove('active');
+		if(treeDivs[i].dataset.id == positionId){
+			treeDivs[i].classList.add("active");
+		}
+	}
+}
+
+
+
+
+//-----------------------------------2.渲染文件夹区域-----------------------------------
+var noneFiler = document.getElementsByClassName('none_filer')[0];
+function creatElementfile(id){
+	//——————先找到所有子节点的数据，然后根据数据生成文件夹
+	var childs = getChildsById(id);
+	var childsHtml = '';
+	if(childs.length != 0){
+		childsHtml = childs.map(function (item){
+			return `<div data-id=${item.id} class="content_main_item">
+						<img src="./images/filer.png" alt="" />
+						<span class="folder-name">${item.title}</span>
+						<input style="text-align:center; display:none;" type="text" class="focu"/>
+						<input type="text" class="editor"/>
+						<i></i>
+					</div>`;
+		}).join('');
+		noneFiler.style.display = 'none';
+	}else{
+		//生成结构之前，把全选按钮的相关样式去除，状态设为false；并且把控制单选累计的值n清零；
+		n=0;
+		checkedAll.classList.remove('checked');
+		checkedAll.state = false;
+		//没有子文件提醒；
+		noneFiler.style.display = 'block';
+	};
+	
+	return childsHtml;
+	
+};
+
+var content_main = document.getElementsByClassName('content_main')[0];
+content_main.innerHTML =  creatElementfile(0);
+//-----------------------------------3.渲染文件夹导航条-----------------------------------		
+// 找到指定id的祖先数据，一直找到最顶层
+function getParentsById(id){
+	var arr = [];
+	for(var attr in data){
+		if(data[attr].id == id){
+			arr.push(data[attr]);
+			// 传入父级的id，getParentsById返回是这个id的父级数据，
+			// 使用concat把指定id的数据和父数据练级起来
+			// 返回的是新数组，arr重新赋值这个新数组
+			arr = arr.concat(getParentsById(data[attr].pid));
+			break;
+		}
+	}
+	return arr;
+}	
+
+function createNavHtml(id){
+	//生成结构之前，把全选按钮的相关样式去除，状态设为false；并且把控制单选累计的值n清零；
+	var checkedAll = $('.checked-all')[0];
+	n=0;
+	checkedAll.classList.remove('checked');
+	checkedAll.state = false;
+	
+	var parents = getParentsById(id).reverse();
+	var navHtml = '';
+	//有子级根据子级的生成结构，没有为空；
+	
+	if(parents.length != 0 ){
+		for( var i = 0; i < parents.length-1; i++ ){
+			navHtml += `<a data-id=${parents[i].id} href="javascript:;">${parents[i].title}<em></em></a>`;
+		}
+
+		navHtml += `<span data-id=${parents[parents.length-1].id} class="drent">${parents[parents.length-1].title}</span>`;
+	}
+	
+
+	return navHtml;
+}
+var content_nav = document.getElementsByClassName('content_nav')[0];
+content_nav.innerHTML = createNavHtml(0);
+
+
+//-----------------------------------4.树形菜单--------------------------------------------
+
+	
+var content_left = document.getElementsByClassName('content_left')[0];
+var aI = $('i',content_left);
+
+//@@@@@@@@@ 1.给每一个小三角添加点击事件
+content_left.addEventListener('click',function (ev) {
+	if(ev.target.nodeName === 'I'){
+		if(!ev.target.parentNode.nextElementSibling){//如果点击后span没有下一个兄弟元素，则不执行以下代码
+				return;
+		}else{
+			if(ev.target.parentNode.state){
+				ev.target.className = "del";
+				ev.target.nextElementSibling.className = "del2";
+				ev.target.parentNode.nextElementSibling.style.display = 'none';
+				ev.target.parentNode.state = false;//展开后，把状态设为
+				
+							
+		}else{
+				ev.target.className = "add";
+				ev.target.nextElementSibling.className = "add2";
+				ev.target.parentNode.nextElementSibling.style.display = 'block';
+				ev.target.parentNode.state = true;
+					
+			};
+		};
+	};
+});
+//@@@@@@@@@ 2.点击树形菜单文本与文件夹区域和文件导航区域交互
+content_left.addEventListener('click',function (ev) {
+	if(ev.target.nodeName === 'SPAN'){
+		//生成结构之前，把全选按钮的相关样式去除，状态设为false；并且把控制单选累计的值n清零；
+		n=0;
+		checkedAll.classList.remove('checked');
+		checkedAll.state = false;
+		if(!ev.target.parentNode.nextElementSibling){//如果点击元素的父元素没有下一个兄弟元素；执行一下代码
+			ev.target.className = "add2";//给点击元素加上打开文件夹的class
+		}else{
+			ev.target.parentNode.state = true;//记录一下父级状态，跟小三角父级的状态要保持一致，小三角也是展开状态；
+			ev.target.className = "add2";//给点击元素加上打开文件夹的class
+			ev.target.previousElementSibling.className = "add";//给小三角加上打开文件夹的class
+			ev.target.parentNode.nextElementSibling.style.display = 'block';//点击元素的父元素的下一个兄弟元素展开；
+
+		};
+		//根据点击元素父元素的id，生成子级的文件夹，放入文件区域；
+		content_main.innerHTML = creatElementfile(ev.target.parentNode.dataset.id);
+		//根据点击元素父元素的id，生成所有祖宗级别的结构放入文件导航；
+		content_nav.innerHTML = createNavHtml(ev.target.parentNode.dataset.id);
+		//根据点击元素父元素的id，定位到该父元素，加高亮；
+		positionElement(ev.target.parentNode.dataset.id);
+			
+	};
+})
+
+//-----------------------------------5.点击文件导航元素-----------------------------------
+	//@@@@@@@@@ 1.与文件区域和树形菜单交互
+var contentNav = document.getElementsByClassName('content_nav')[0];
+
+contentNav.addEventListener('click',function (ev) {
+	if(ev.target.nodeName == 'A'){//点击的元素是a，最后一个span不能点
+		//根据点击元素的id，生成文件夹，放入文件区域；
+		content_main.innerHTML = creatElementfile(ev.target.dataset.id);
+		//根据点击元素的id，定位到该元素，加高亮；
+		positionElement(ev.target.dataset.id);
+		//根据点击元素的id，生成点击元素的所有祖宗级别的结构放入文件导航；
+		content_nav.innerHTML = createNavHtml(ev.target.dataset.id);
+
+	};
+});
+
+//@@@@@@@@@ 2.点击全选按钮，文件夹全部选中，再次点击全部不选择
+var contentRight = $('.content_right')[0];
+contentRight.addEventListener('click',function (ev) {
+	if(ev.target.nodeName == 'LABEL' &&checkeds.length){
+		var aKaung = $('i',contentMain);
+		if(ev.target.state){
+			ev.target.classList.remove('checked');
+			for(var i=0;i<aKaung.length;i++){
+				aKaung[i].classList.remove('checked');
+				aKaung[i].parentNode.classList.remove('content_main_active');
+				aKaung[i].state = false;
+				ev.target.state = false;
+			};
+			//重置控制单选选中按钮的变量；
+			n=0
+		}else{
+			
+			ev.target.classList.add('checked');//全选框
+			for(var i=0;i<aKaung.length;i++){
+				aKaung[i].classList.add('checked');
+				aKaung[i].parentNode.classList.add('content_main_active');
+				aKaung[i].state = true;
+				ev.target.state = true;
+			};
+			n=aKaung.length
+		};
+	};
+});
+
+
+//-----------------------------------6.文件区域交互-----------------------------------
+var contentMain = document.getElementsByClassName('content_main')[0];
+
+//@@@@@@@@@ 1.与文件导航区域和树形菜单交互--
+contentMain.addEventListener('click',function (ev) {
+	if(ev.target.nodeName == 'I'){
+		return;
+	}
+	if(ev.target.nodeName =='INPUT'){
+		return;
+	}
+	if(ev.target.nodeName == 'DIV' || ev.target.parentNode.nodeName == 'DIV'  && ev.target.nodeName != 'SECTION'){
+		if(ev.target.dataset.id || ev.target.parentNode.dataset.id){
+			//根据点击元素父元素的id，定位到该父元素，加高亮；
+			positionElement(ev.target.dataset.id || ev.target.parentNode.dataset.id);
+			//根据点击元素父元素的id，生成所有祖宗级别的结构放入文件导航；
+			content_nav.innerHTML = createNavHtml(ev.target.dataset.id || ev.target.parentNode.dataset.id);
+			//根据点击元素父元素的id，生成子级的文件夹，放入文件区域；
+			content_main.innerHTML = creatElementfile(ev.target.dataset.id || ev.target.parentNode.dataset.id);
+		}
+	}
+});
+//@@@@@@@@@ 2.文件夹单选按钮
+var contentMain = document.getElementsByClassName('content_main')[0];
+var checkedAll = $('.checked-all')[0];
+var n = 0;	//记录单选有几个选中；
+var checkeds = $('i',contentMain);	//获取所有的单选按钮；
+contentMain.addEventListener('click',function (ev) {
+	if(ev.target.nodeName == 'I'){
+		if(checkeds.length != 0 && ev.target.state ){
+				n--;
+				ev.target.classList.remove('checked');
+				ev.target.parentNode.classList.remove('content_main_active');
+				ev.target.state = false;
+		}else{
+				n++;
+				ev.target.classList.add('checked');
+				ev.target.parentNode.classList.add('content_main_active');
+				ev.target.state = true;
+		};
+	};
+	//单选按钮是点击状态的个数=所获取的单选按钮个数，全选按钮选中；
+	if(checkeds.length && n >= checkeds.length ){
+			checkedAll.classList.add('checked');
+			checkedAll.state = true;
+		}else{
+			checkedAll.classList.remove('checked');
+			checkedAll.state = false;
+		};
+});
+//@@@@@@@@@ 3.拖选文件夹
+var contentMain = $('.content_main')[0];
+contentMain.addEventListener('mousedown',function(ev){
+	if(ev.target.nodeName == 'SECTION' && checkeds.length !=0){
+		var contentMainItem = $('.content_main_item');//每一次拖选，获取所有文件夹元素；
+		var contentI =  $('i',contentMain);//每一次拖选，获取所有文件夹单选按钮元素；
+		var newDiv = document.createElement('div');//生成拖选框；
+		newDiv.className = 'tuoxuan';//给拖选框加样式；
+		document.body.appendChild(newDiv);//放入需要拖选框的节点中；
+		var disX = ev.clientX;
+		var disY = ev.clientY;
+		//拖选框的初始位置；需要减去父级的偏移量；
+		newDiv.style.left = disX  - newDiv.parentNode.offsetLeft + 'px';
+		newDiv.style.top = disY - newDiv.parentNode.offsetTop +  'px';
+		document.onmousemove = function (ev) {
+			//拖选框的宽高根据根据鼠标按下的位置和鼠标移动的位置生成，取决定值（四个方向）；
+			newDiv.style.width = Math.abs(ev.clientX - disX)  + 'px';
+			newDiv.style.height = Math.abs( ev.clientY - disY) + 'px';
+			//拖选框的四个方向的位置，按下的位置和移动的最终位置，两者取最小值；
+			newDiv.style.left = Math.min(ev.clientX , disX) - newDiv.parentNode.offsetLeft+'px';
+			newDiv.style.top = Math.min(ev.clientY , disY) - newDiv.parentNode.offsetTop+'px';
+			//是否发生碰撞；
+			for(var i=0;i<contentMainItem.length;i++){
+				if(collision(newDiv,contentMainItem[i])){//发生碰撞，所有碰撞元素加样式；
+					contentMainItem[i].classList.add('content_main_active');
+					contentMainItem[i].lastElementChild.classList.add('checked');
+					contentMainItem[i].lastElementChild.state = true;
+				}else{//没有，删除样式；
+					contentMainItem[i].classList.remove('content_main_active');
+					contentMainItem[i].lastElementChild.classList.remove('checked');
+					contentMainItem[i].lastElementChild.state = false;
+				};
+				
+			};
+		};
+		document.onmouseup = function () {
+			document.onmousemove = null;
+			var contentI =  $('i',contentMain);//每一次拖选，获取所有文件夹单选按钮元素；
+			
+
+			for(var i=0; i<contentMainItem.length;i++){
+				if(collision(newDiv,contentMainItem[i])){
+					//如果up时，有文件夹碰撞，控制单选选中的n++；
+					n++;
+					//添加文件夹选中的样式
+					contentMainItem[i].classList.add('content_main_active');
+					//给每一个被碰撞元素的最后一个元素（单选按钮）加样式并且记录状态为true；
+					contentMainItem[i].lastElementChild.classList.add('checked');
+					contentMainItem[i].lastElementChild.state = true;
+				};
+			};
+			//框选碰撞文件夹数量=生成文件元素的数量
+			if(n>=contentMainItem.length){//全选按钮选中，状态更改为true；
+				checkedAll.classList.add('checked');
+				checkedAll.state = true;
+			}else{
+				checkedAll.classList.remove('checked');
+				checkedAll.state = false;
+				//不相等时，把已选中文件夹的数量，给n（记录选中状态的单选按钮数量）
+			};
+			newDiv.remove();	//鼠标up，删除拖选框；
+			document.onmouseup = null;//up之后阻止冒泡事件发生，
+		};
+	};
+	
+	ev.preventDefault();
+});
+
+
+//点击空白区域，清除文件夹选中状态的样式，并且改变选中状态；以及全选按钮的样式和状态；
+contentMain.addEventListener('mousedown',function(ev){
+	if(ev.target.nodeName == 'SECTION'){
+		var contentMainItem = $('.content_main_item');//每一次拖选，获取所有文件夹元素；
+		var contentI =  $('i',contentMain);//每一次拖选，获取所有文件夹单选按钮元素；
+		n=0;//初始化文件夹单选选中的数量；
+		//全选按钮的样式和状态；
+		checkedAll.classList.remove('checked');
+		checkedAll.state = false;
+		for(var i=0;i<contentMainItem.length;i++){
+			//清除文件夹选中状态的样式，并且改变选中状态；
+			contentMainItem[i].classList.remove('content_main_active');
+			contentMainItem[i].lastElementChild.classList.remove('checked');
+			contentMainItem[i].lastElementChild.state = false;
+		};
+	};
+	ev.stopPropagation;
+});
+
+//-----------------------------------7.新建文件夹-----------------------------------
+//1.点击新建文件夹按钮：在文件夹区最前面插入新建文件夹；并且鼠标自动聚焦到文件夹名字上；
+//如果文件夹有名字才能新建成功,并且同级文件名字不能重复，名字不能是空格
+var create = document.getElementById('create');	//新建文件夹按钮
+var newDivs = null;//新建文件夹元素
+var oInput = null;//新建文件夹获取光标的input框元素；
+var oSpan = null;//文件夹名元素；
+var newDivsPid = null;//新建元素的pid，也就是新建元素的父级id；
+var contentNav = document.getElementsByClassName('content_nav')[0];//文件夹导航元素；
+var newTime = null;//时间戳，用作新建文件夹的id；
+var spans = contentMain.getElementsByTagName('span');//获取所有
+
+function creatFiler(){
+	//新建元素的父级id；
+	newDivsPid = contentNav.lastElementChild.dataset.id;
+	//如果没有文件夹不执行一下代码；
+	if(!newDivs){
+		return;
+	};
+	//-----判断鼠标聚焦的input的value是否为空
+	if(oInput.value === ""){
+		//提示文件名不能为空，删除新建文件夹；
+		
+		newDivs.remove();
+		newDivs = null;
+		//如果是没有子元素的文件夹，新建不成功后，提示没有文件夹信息显示；
+		if(spans.length == 0){
+			noneFiler.style.display = 'block';
+		};
+	}else{
+		//如果不为空，则把文件名不重复的过滤出来；然后跟所有的审span的innerHTML对比；
+		for(var i=0;i<spans.length;i++){
+			if(spans[i].innerHTML == oInput.value){
+				//如果重名，提示不能重名，删除新建，后面代码不执行；
+				tips('warn','文件夹不能重名');
+				newDivs.remove();
+				newDivs = null;
+				return;
+			};
+			
+		};
+		
+		//新生成文件夹鼠标聚焦的input的value赋给新生成文件夹的放文件名的元素；
+		oSpan.innerHTML = oInput.value;
+		//鼠标聚焦的input清除；
+		oInput.style.display = 'none';
+		oSpan.style.display = 'block';
+		tips('ok','新建文件夹成功！');
+		//只要新建成功后，全选按钮不选中？？？？？？
+		checkedAll.classList.remove('checked');
+		checkedAll.state = false;
+
+
+		newDivs.setAttribute("data-id",newTime);//给生成的div添加自定义属性data-id	
+		//把新建不重名元素的信息放入数据中；
+		data[newTime]={"id": newTime,"pid": newDivsPid,"title": oSpan.innerHTML, "type": "file"};
+		//根据已经有新建文件夹元素数据的数组，重新渲染树状导航栏；
+		contentLeft.innerHTML = createTreeHtml(-1,level);
+		//给左侧树状导航新建元素的父级加高亮；
+		positionElement(newDivsPid);
+		newDivs = null;
+	};
+};
+
+	
+
+create.addEventListener('click',function(ev){
+	create.state = true;
+	//新建文件夹存在，就把没有文件夹提醒信息清除
+	noneFiler.style.display = 'none';//没有文件夹提醒信息清除；
+	creatFiler();
+	newTime = Date.now();//每次点击新建生成一个时间戳，用作新建文件夹的id；
+	newDivs = document.createElement('div');//生成一个div元素
+	newDivs.classList.add('content_main_item');//给生成的div添加样式；
+	
+	newDivs.innerHTML = `<img src="./images/filer.png" alt="" />
+						<span class="folder-name" style="display:none;"></span>
+						<input style="text-align:center;" type="text" class="focu"/>
+						<input type="text" class="editor"/>
+						<i></i>`;
+	//把生成的文件夹插入到第一个；					
+	contentMain.insertBefore(newDivs,contentMain.firstElementChild);
+	//------光标聚焦到新生成文件夹名的input上
+	oInput = contentMain.getElementsByClassName('focu')[0];//获取新生成文件夹的input框
+	oSpan = contentMain.getElementsByClassName('folder-name')[0];//获取新生成文件夹的放文件名的元素；
+	oInput.focus();
+	//自动获取鼠标焦点；添加样式；
+	oInput.classList.add('folder-span');
+	ev.stopPropagation();
+});
+
+document.addEventListener('click',function(){
+	if(create.state){
+		creatFiler();
+		create.state = false;
+	};
+});
+
+//-----------------------------------------8.重命名文件夹--------------------------------------------
+//1.选中&没选中 ，没选中提示；2.选中的话，选中一个后，鼠标自动聚焦选中文件名；
+//4.如果没有更改文件名，则还是原来的文件名；如果更改了，不能和同级文件同名，命名成功后提示“命名成功”；
+var rename = document.getElementById('rename');//重命名按钮
+var contentMainItem = contentMain.getElementsByClassName('content_main_item');
+var spansInner = contentMain.getElementsByClassName('folder-name');
+var checkBoxs = contentMain.getElementsByTagName("i");
+var inputName = null;
+var spanName = null;
+function whoSelected(){
+	var arr = [];
+	for( var i = 0; i < checkBoxs.length; i++ ){
+		if(checkBoxs[i].classList.contains("checked")){
+			arr.push(checkBoxs[i])
+		}
+	}
+
+	return arr;
+}
+
+function retsetName(){
+	var whoselect = whoSelected();
+	if(whoselect.length ==0 ){
+		tips('warn','请选中需要重名名的文件夹！')
+	}else{
+		if(whoselect.length > 1){
+			tips('err','不能同时给多个文件夹重命名！')
+		}else{
+			rename.isClick = true;
+			var selectFile = whoselect[0].parentNode;
+			inputName = selectFile.getElementsByClassName('focu')[0];
+			spanName = selectFile.querySelector("span");
+			inputName .value = spanName.innerHTML;
+			spanName.style.display = 'none';
+			inputName.style.display = 'block';
+			inputName.select();
+			if(inputName.isOn){
+				return;
+			}
+			inputName.isOn = true;
+			inputName.addEventListener('mousedown',function(ev){
+				ev.stopPropagation();		
+			});
+		};
+	};
+};
+var whoselect 
+
+rename.addEventListener('click',function(ev){
+	 whoselect = whoSelected();
+	
+	selectFile = whoselect[0].parentNode;
+		newInput = selectFile.querySelector("input");
+		span = selectFile.querySelector("span");
+	retsetName();
+	ev.stopPropagation()
+});
+
+var selectFile
+var newInput
+var span
+document.addEventListener('click',function(ev){
+	//只有选中一个可以
+	var spansInner = contentMain.getElementsByClassName('folder-name');
+	if(rename.isClick){
+		
+		
+		var parentId = selectFile.dataset.id;
+		if(newInput.value === ''){
+			tips('err','文件名不能为空！')
+			newInput.style.display = 'none';
+			spanName.style.display = 'block';
+		}else{
+			console.log(spansInner.length)
+			for(var i=0;i<spansInner.length;i++){
+			//重名，文件名字不变，并且提示；
+
+				if(spansInner[i].innerHTML == newInput.value && newInput.value != span.innerHTML){
+					tips('err','文件名不能重复！')
+					//大坑，将选中文件夹数据中的title赋给span；？？？？？
+					spanName.innerHTML = data[inputName.parentNode.dataset.id].title;
+					inputName.style.display = 'none';
+					spanName.style.display = 'block';
+					rename.state = false;
+					return;
+				};
+				
+			};
+			//2.不重名，更改文件名成功；
+			spanName.innerHTML = inputName.value;
+			inputName.style.display = 'none';
+			spanName.style.display = 'block';
+			tips('ok','重命名成功啦！')
+			//把命名成功的文件的文件名存入数据中，重新渲染做出结构；
+			//
+			var newDivsPid = contentNav.lastElementChild.dataset.id;
+			data[parentId] = {"id": parentId,"pid": newDivsPid,"title": spanName.innerHTML, "type": "file"};
+			//根据已经有新建文件夹元素数据的数组，重新渲染树状导航栏；
+			contentLeft.innerHTML = createTreeHtml(-1,level);
+			//给左侧树状导航新建元素的父级加高亮；
+			positionElement(newDivsPid);
+			//根据点击元素父元素的id，生成子级的文件夹，放入文件区域；
+			content_main.innerHTML = creatElementfile(newDivsPid);
+			spanName = null;
+			inputName = null;
+		};
+		rename.isClick = false;
+	};
+		
+});
+//-----------------------------------------9.删除文件夹-----------------------------------------
+// 找到指定id所有的子孙数据 包括自身
+function getChildsAllById(id){
+	var arr = [];
+	// 找到要删除数据本身
+	var item = getDateById(id);
+	arr.push(item);
+	for(var attr in data){
+		if(data[attr].pid == id){
+			//arr.push(data[attr]);
+			arr = arr.concat(getChildsAllById(data[attr].id))
+		};
+	};
+	return arr;
+};
+// 删除包含指定id自身
+function deleteChildsAllById(id){
+	var childsAll = getChildsAllById(id);
+	for( var i = 0; i < childsAll.length; i++ ){
+		
+		//console.log(data[childsAll[i].id]);
+		if(data[childsAll[i].id]){
+			delete data[childsAll[i].id];
+		}
+		
+	}
+}
+
+
+var del = document.querySelector("#del");
+//弹框
+var tanbox = document.querySelector("#tanbox");
+
+var btns = tanbox.querySelectorAll("a");
+// 确定
+del.addEventListener('click',function(){
+	var whoselect = whoSelected();
+	if(whoselect.length === 0){
+		tips('err','请选择需要删除的文件夹')
+	}else{
+		// 先弹出一个框
+		tanbox.style.display = 'block';
+	}
+});
+
+btns[0].addEventListener('click',function(){
+	var whoselect = whoSelected();
+	// 删除一个选中的文件
+	for( var i = 0; i < whoselect.length; i++ ){
+		var selectId = whoselect[i].parentNode.dataset.id;
+		deleteChildsAllById(selectId);
+		whoselect[i].parentNode.remove();
+	};
+	var newDivsPid = contentNav.lastElementChild.dataset.id;
+	contentLeft.innerHTML = createTreeHtml(-1,level);
+	positionElement(newDivsPid);
+	tanbox.style.display = 'none';
+	tips('ok','删除文件夹成功！')
+	// 看一下当前目录下还有没有子级
+	var childs = getChildsById(newDivsPid);
+	if(childs.length === 0){
+		noneFiler.style.display = 'block';
+		checkedAll.classList.remove("checked");
+	};
+});
+btns[1].addEventListener('click',function(){
+	tanbox.style.display = 'none';
+})
+//-----------------------------------------10.移动文件夹-----------------------------------------	
+
+var remove = document.getElementById('remove');
+var mask = document.getElementsByClassName('mask')[0];
+var removeKuang = document.getElementsByClassName('conf_remove')[0];
+var maskContent = document.getElementsByClassName('mask_content')[0];
+var closeIco = document.getElementsByClassName('close-ico')[0];
+var removeState = true;
+var targetDiv = null;
+remove.addEventListener('click',function(ev){
+	var whoselect = whoSelected();
+	if(whoselect.length === 0){
+		alert('请选中需要移动的文件夹')
+	}else{
+		mask.classList.add('maskShow');
+		setTimeout(function(){
+			removeKuang.style.display = 'block';
+			removeKuang.style.top = '100px';
+		},200);
+		
+	};
+	maskContent.innerHTML = createTreeHtml(-1,level);
+	var modelDivs = maskContent.getElementsByTagName('div');
+	var divOne = modelDivs[0].classList.add('active');
+	var whoselect = whoSelected();
+	var arr=[];
+	for(var i=0;i<whoselect.length;i++){
+		var id = whoselect[i].parentNode.dataset.id;
+		arr =  arr.concat(getChildsAllById(id));
+	};
+	var newDivsPid = contentNav.lastElementChild.dataset.id;
+	arr.push(getDateById(newDivsPid));
+	maskContent.addEventListener('click',function(ev){
+		if(ev.target.nodeName === 'SPAN'){
+			for(var i=0;i<modelDivs.length;i++){
+				modelDivs[i].classList.remove('active');
+			}
+			targetDiv = ev.target.parentNode.dataset.id;
+			ev.target.parentNode.classList.add('active');
+			var yidongTip = document.getElementsByClassName('yidong-tip')[0];
+			removeState = true;
+			for(var i=0;i<arr.length;i++){
+				if(ev.target.parentNode.dataset.id == arr[i].id){
+					yidongTip.innerHTML = "不能移动到自身和子孙元素";
+					removeState = false;
+					break;
+				}
+			};
+		};
+	});
+	
+
+	ev.stopPropagation;
+});
+
+
+var yingdongQD = document.getElementsByClassName('yidong_qd')[0];
+var yingdongQX = document.getElementsByClassName('yidong_qx')[0];
+console.log(yingdongQX)
+
+yingdongQD.addEventListener('click',function(){
+	var whoSeled = whoSelected();
+	if(removeState){
+		for( var i = 0; i < whoSeled.length; i++ ){
+			var id = whoSeled[i].parentNode.dataset.id;
+			var item = getDateById(id);
+
+			if(!isExistNameById(targetDiv,item.title)){
+				whoSeled[i].parentNode.remove();
+				item.pid = targetDiv;
+			}else{
+				tips('warn','部分移动失败，因为重名了');
+			}
+		};
+
+		contentLeft.innerHTML = createTreeHtml(-1,-1);
+		content_main.innerHTML = creatElementfile(targetDiv);
+
+		removeKuang.style.display = 'none';
+		
+	}
+});
+
+yingdongQX.addEventListener('click',function(){
+	removeKuang.style.display = 'none';
+});
+
+function isExistNameById(id,value){
+	var childs = getChildsById(id);
+	for( var i = 0; i < childs.length; i++ ){
+		if(childs[i].title === value){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+
+closeIco.addEventListener('click',function(){
+	mask.classList.remove('maskShow');
+	removeKuang.style.top = '-450px';
+});
+
+
+
+
+// 封装小提醒
+var fullTip = document.querySelector(".full-tip-box");
+var tipText = fullTip.querySelector(".text");
+var timer = null;
+/*document.onclick = function (){
+	// 瞬间拉倒-32px
+	console.log(123);
+	tips('warn','警告')
+};*/
+
+function tips(cla,title){
+	fullTip.style.top = '-32px';
+	fullTip.style.transition = 'none';
+	// 运动到0
+	tipText.innerHTML = title;
+	fullTip.className = 'full-tip-box';
+	setTimeout(function (){
+		fullTip.classList.add(cla);
+		fullTip.style.top = '0px';
+		fullTip.style.transition = '.3s';	
+	})
+
+	clearTimeout(timer);
+	timer = setTimeout(function (){
+		fullTip.style.top = '-32px';
+	},2000);	
+};
+
+
+
+
+
+
+
+
+
+		</script>
+	</body>
+</html>
